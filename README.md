@@ -9,7 +9,7 @@ https://forums.eagle.ru/topic/96493-smarter-sam<br><br>
 <br>
 
 # 使い方
-1.luaファイルを任意の場所に保存してください。<br>
+1.SAM_AgainstSEADLogic_verXX.luaファイルを任意の場所に保存してください。<br>
 2.DCSのエディタ画面を開いてください。<br>
 3.左側にある"set rules for trigger"を押下してください。<br>
 4."TRIGGERS"の"NEW"ボタンを押下してください。<br>

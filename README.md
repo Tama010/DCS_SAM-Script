@@ -16,7 +16,11 @@ https://forums.eagle.ru/topic/96493-smarter-sam<br><br>
 5."ACTIONS"の"NEW"ボタンを押下してください。<br>
 6."ACTION:"から"DO SCRIPT FILE"を選択してください。<br>
 7.1で保存したファイルを選択してください。<br>
-
+<br>
 あとはSAMを配置したりして戦ってみてください。<br>
+# 補足
+レーダーを出すユニット（SR、TR）のUnitNameに"RadarAlwaysActivated"というキーワードを含めるとレーダーを停止しなくなります。
+
+
 
 以上です。

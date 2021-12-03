@@ -119,4 +119,3 @@ SEAD_launch = {}
 	end
 
 world.addEventHandler(SEAD_launch)
-

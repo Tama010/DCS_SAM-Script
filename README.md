@@ -7,6 +7,9 @@ https://forums.eagle.ru/topic/96493-smarter-sam<br><br>
 ・一定時間経過するとレーダーを再起動。<br>
 ・ARMの発射地点からの距離の応じてレーダー停止のタイミングと再起動のタイミングは変化。<br>
 <br>
+★注意<br>
+F/A-18CからPBモードでHARMを発射するとレーダー操作されません。<br>
+<br>
 
 # 使い方
 1.SAM_AgainstSEADLogic_verXX.luaファイルを任意の場所に保存してください。<br>
@@ -21,6 +24,12 @@ https://forums.eagle.ru/topic/96493-smarter-sam<br><br>
 # 補足
 レーダーを出すユニット（SR、TR）のUnitNameに"RadarAlwaysActivated"というキーワードを含めるとレーダーを停止しなくなります。
 
-
+# バージョン管理
+1.0 リリース版
+1.1 機能追加
+      ・レーダー操作しないSAMの配置が可能
+1.2 バグ修正
+      ・F/A-18CでPBモードでHARMを射撃するとエラーが発生する事象を修正
+      ・レーダーの停止/起動のタイミングの微調整
 
 以上です。

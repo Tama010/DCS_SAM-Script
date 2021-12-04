@@ -19,53 +19,58 @@ SEAD_launch = {}
 				--trigger.action.outText( string.format("ARMが発射された"), 20) --debag
 				
 				-- 下準備
-				local _targetMim = Weapon.getTarget(_SEADmissile) -- ARMのターゲットを特定
-				local _targetMimname = Unit.getName(_targetMim) -- 攻撃対象のユニット名を取得
-				local _targetMimgroup = Unit.getGroup(Weapon.getTarget(_SEADmissile)) -- 攻撃対象のグループを特定
-				local _samGrp = _targetMimgroup:getName() -- 攻撃対象のグループ名を取得
-				local _targetMimcont= _targetMimgroup:getController()
+				 _targetMim = Weapon.getTarget(_SEADmissile) -- ARMのターゲットを特定
+				 
+				 	if _targetMim == nil then --PBモードで発射すると誰をターゲットにしたという情報が入らない（一時対応）
 
-				local _samOparationFlag = radarOparationFlagMaker(_targetMimname)
+				 else
+					 _targetMimname = Unit.getName(_targetMim) -- 攻撃対象のユニット名を取得
+					 _targetMimgroup = Unit.getGroup(Weapon.getTarget(_SEADmissile)) -- 攻撃対象のグループを特定
+					 _samGrp = _targetMimgroup:getName() -- 攻撃対象のグループ名を取得
+					 _targetMimcont= _targetMimgroup:getController()
+
+					local _samOparationFlag = radarOparationFlagMaker(_targetMimname)
 				
-				if _samOparationFlag == true then
-					
+					if _samOparationFlag == true then
+						
 					--trigger.action.outText( "レーダー操作開始", 20) --debag
-					
-					local id = {
-						groupName = _targetMimgroup,
-						ctrl = _targetMimcont
-					}
-				
-					-- レーダー停止フェーズ
-					
-					local _distance = culculateRange(_shooterGrp, _samGrp) -- 発射地点とSAMの距離を計算
-					local _radarStopTime = decideStopTiming(_distance) -- レーダー停止のタイミングを決定
-					
-					-- レーダー停止
-					function StopRadar() -- 外出ししたいけどControllerの渡し方不明のためここに書く
-						--trigger.action.outText( string.format("レーダー停止"), 20)
-					Controller.setOption(_targetMimcont, AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.GREEN)
-					end	
-					timer.scheduleFunction(StopRadar, id, timer.getTime() + _radarStopTime) -- 指定したタイミングでレーダー停止
-					
-					-- レーダー再起動フェーズ
-					_radarRebootTime = decideRebootTiming(_distance) -- レーダー停止から再起動の時間を取得
-					
-					-- ぶっちゃけ何してるかわからん
-					local SuppressedGroups = {}
-					if SuppressedGroups[id.groupName] == nil then
-						SuppressedGroups[id.groupName] = {
-						SuppressionEndTime = timer.getTime() + _radarRebootTime,
-						SuppressionEndN = SuppressionEndCounter --Store instance of SuppressionEnd() scheduled function
+						
+						local id = {
+							groupName = _targetMimgroup,
+							ctrl = _targetMimcont
 						}
-						function SuppressionEnd(id) -- 外出ししたいけど(ry
-							--trigger.action.outText( string.format("レーダー起動"), 20)
-							id.ctrl:setOption(AI.Option.Ground.id.ALARM_STATE, AI.Option.Ground.val.ALARM_STATE.RED)
-							SuppressedGroups[id.groupName] = nil
-						end
+					
+						-- レーダー停止フェーズ
+						
+						local _distance = culculateRange(_shooterGrp, _samGrp) -- 発射地点とSAMの距離を計算
+						local _radarStopTime = decideStopTiming(_distance) -- レーダー停止のタイミングを決定
+						
+						-- レーダー停止
+						function StopRadar() -- 外出ししたいけどControllerの渡し方不明のためここに書く
+							--trigger.action.outText( string.format("レーダー停止"), 30)
+						Controller.setOption(_targetMimcont, AI.Option.Ground.id.ALARM_STATE,AI.Option.Ground.val.ALARM_STATE.GREEN)
+						end	
+						timer.scheduleFunction(StopRadar, id, timer.getTime() + _radarStopTime) -- 指定したタイミングでレーダー停止
+						
+						-- レーダー再起動フェーズ
+						_radarRebootTime = decideRebootTiming(_distance) -- レーダー停止から再起動の時間を取得
+						
+						-- ぶっちゃけ何してるかわからん
+						local SuppressedGroups = {}
+						if SuppressedGroups[id.groupName] == nil then
+							SuppressedGroups[id.groupName] = {
+							SuppressionEndTime = timer.getTime() + _radarRebootTime,
+							SuppressionEndN = SuppressionEndCounter --Store instance of SuppressionEnd() scheduled function
+							}
+							function SuppressionEnd(id) -- 外出ししたいけど(ry
+								--trigger.action.outText( string.format("レーダー再起動"), 30)
+								id.ctrl:setOption(AI.Option.Ground.id.ALARM_STATE, AI.Option.Ground.val.ALARM_STATE.RED)
+								SuppressedGroups[id.groupName] = nil
+							end
 
-					timer.scheduleFunction(SuppressionEnd, id, SuppressedGroups[id.groupName].SuppressionEndTime) --指定したタイミングでレーダー再起動
-					end
+						timer.scheduleFunction(SuppressionEnd, id, SuppressedGroups[id.groupName].SuppressionEndTime) --指定したタイミングでレーダー再起動
+						end
+					 end
 				end
 			end
 		end
@@ -88,18 +93,22 @@ SEAD_launch = {}
 		local shooter_pos = Group.getByName(_shooterGrp):getUnits()[1]:getPoint()
 		local sam_pos = Group.getByName(_samGrp):getUnits()[1]:getPoint()
 		local distance = ((shooter_pos.x - sam_pos.x)^2 + (shooter_pos.z - sam_pos.z)^2)^0.5
-		--trigger.action.outText( string.format(distance), 20)
+		--trigger.action.outText( string.format(distance) .. "km", 30)
 		return distance
 	end
 
 	-- ARMが発射されたら何秒でレーダーを停止するか
 	function decideStopTiming(_distance)
 		local _radarStopTime = 8 
-		if _distance >= 60000 then
-			_radarStopTime = 60
+		if _distance >= 100000 then
+			_radarStopTime = 110
+		elseif _distance >= 80000 then
+			_radarStopTime = 80
+		elseif _distance >= 60000 then
+			_radarStopTime = 55
 		elseif _distance >= 40000 then
-			_radarStopTime = 30
-		elseif _distance >= 25000 then
+			_radarStopTime = 35
+		elseif _distance >= 30000 then
 			_radarStopTime = 15
 		end
 		return _radarStopTime
@@ -107,9 +116,11 @@ SEAD_launch = {}
 
 	-- レーダー停止後から何秒で再起どうするか
 	function decideRebootTiming(_distance)
-		local _radarDelayTime = 45
-		if _distance >= 60000 then
-			_radarDelayTime = math.random(160, 175)
+		local _radarDelayTime = math.random(45, 60)
+		if _distance >= 80000 then
+			_radarDelayTime = math.random(180, 200)
+		elseif _distance >= 60000 then
+			_radarDelayTime = math.random(150, 165)
 		elseif _distance >= 40000 then
 			_radarDelayTime = math.random(140, 155)
 		elseif _distance >= 20000 then
@@ -119,3 +130,4 @@ SEAD_launch = {}
 	end
 
 world.addEventHandler(SEAD_launch)
+

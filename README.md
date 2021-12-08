@@ -19,6 +19,9 @@ DCSのSAMの生存性を向上させるスクリプトです。<br>
 7."ACTION:"から"DO SCRIPT FILE"を選択してください。<br>
 8.1で保存したファイルを選択してください。<br>
 9.SAMを配置してグループ名に"SAM"というキーワードを含めてください。（これも忘れやすいので注意！）<br>
+![Test Image 6](https://github.com/Tama010/DCS_SAM-Script/blob/main/%E3%82%A8%E3%83%87%E3%82%A3%E3%82%BF%E3%83%BC%E7%94%BB%E9%9D%A2.png)
+![Test Image 6](https://github.com/Tama010/DCS_SAM-Script/blob/main/%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97%E5%90%8D%E5%A4%89%E6%9B%B4.png)
+
 
 # 補足
 バグや不明点、要望などがございましたらTwitterでご連絡ください。<br>

@@ -809,7 +809,7 @@ function airDefence()
 				elseif _unitName == "S_75M_Volhov" then
 					local _launcher = {
 						['Unit'] = _unitObj,
-						['Range'] = 40000,
+						['Range'] = 50000,
 					}
 					if string.find(_unitObj:getName(), _SHOOTDOWNPRIORITY) then -- 撃墜優先モード
 						_launcher['Range'] = 25000

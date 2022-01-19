@@ -314,7 +314,7 @@ function airDefence()
 	-- SA-11のSRのレーダーを止めるか
 	function judgeStopBukuSrRadarStop(_sr)
 		for _, _bukuSr in pairs(_bukuSrList) do
-			if _sr['Unit']:isExist() then
+			if _sr['Unit']:isExist() and  _bukuSr['Unit']:isExist() then
 				if _sr['Unit']:getName() == _bukuSr['Unit']:getName() then
 					if _bukuSr['isInrangeFlag'] then
 					else

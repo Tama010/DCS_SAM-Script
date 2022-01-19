@@ -1,7 +1,7 @@
 # DCS_SAM-Script
 DCSのSAMの生存性を向上させるスクリプトです。<br>
 資材リンク<br>
-https://github.com/Tama010/DCS_SAM-Script/blob/main/SAM_RadarOparationLogic_ver2.1.lua
+https://github.com/Tama010/DCS_SAM-Script/blob/main/SAM_RadarOparationLogic_ver2.11.lua
 <br>
 
 具体的には以下の機能を実装しています。<br>

@@ -13,12 +13,13 @@ function airDefence()
 	local _REPETATIONTIME = 5 -- 関数再呼び出し時間。単位は秒
 	local _COALITIONSIDERED = 1
 	local _COALITIONSIDEBLUE = 2
-	local _THRESHOLDTIME = 42
+	local _THRESHOLDTIME = 45
 	local _KEYOFDESIGNATEDSAMGRP = "SAM"
 	local _KEYOFDESIGNATEDEWRGRP = "EWR"
 	local _ESCORTSAM = "EscortSAM"
 	local _ACCEPTABLELEVELOFRISKHIGH = "ALRHigh"
 	local _SHOOTDOWNPRIORITY = "SDP"
+	local _ALWAYSACTIVATED = "AlwaysActivated"
 	
 	-- 初期化
 	function _obj:init()
@@ -190,7 +191,9 @@ function airDefence()
 			for _, _unit in pairs(_grp:getUnits()) do
 				if _unit:isExist() then
 					if _unit:getRadar() then
-						judgeEwrHandle(_coalitionSideNum, _unit, _targetList)
+						if string.find(_unit:getName(), _ALWAYSACTIVATED) == false then
+							judgeEwrHandle(_coalitionSideNum, _unit, _targetList)
+						end
 					end
 				end
 			end
@@ -597,7 +600,7 @@ function airDefence()
 	-- SA-11の場合、射程内に敵機が存在するか
 	function IsBukuSrInrangeFlag(_sr)
 		for _, _bukuSr in pairs(_bukuSrList) do
-			if _bukuSr['Unit']:isExist() then
+			if _bukuSr['Unit']:isExist() and  _sr['Unit']:isExist() then
 				if _sr['Unit']:getName() == _bukuSr['Unit']:getName() then
 					return _bukuSr['isInRangeFlag']
 				end
@@ -894,7 +897,7 @@ function airDefence()
 				if _unitName == "Kub 2P25 ln" then
 					local _launcher = {
 						['Unit'] = _unitObj,
-						['Range'] = 25000,
+						['Range'] = 35000,
 					}
 					if string.find(_unitObj:getName(), _SHOOTDOWNPRIORITY) then -- 撃墜優先モード
 						_launcher['Range'] = 15000

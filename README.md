@@ -3,11 +3,11 @@ DCSのSAMの生存性を向上させるスクリプトです。<br>
 資材リンク<br>
 https://github.com/Tama010/DCS_SAM-Script/blob/main/SAM_RadarOparationLogic_ver2.11.lua
 <br>
-
 具体的には以下の機能を実装しています。<br>
-・EWRと連携して射程に入るとレーダーを起動する。<br>
-・対レーダーミサイルの着弾予想時間に合わせてレーダーを停止。<br>
+・EWRと連携して射程に入るとレーダー起動。<br>
+・対レーダーミサイルの飛んでくるとレーダー停止。<br>
 ・対空ミサイルを撃ち尽くすとレーダー停止<br>
+![image](https://user-images.githubusercontent.com/30495755/156955372-7ab682ec-23fd-483a-b7b7-bc3535cd9ab1.png)
 
 <br>
 

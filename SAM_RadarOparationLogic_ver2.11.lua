@@ -20,6 +20,9 @@ function airDefence()
 	local _ACCEPTABLELEVELOFRISKHIGH = "ALRHigh"
 	local _SHOOTDOWNPRIORITY = "SDP"
 	local _ALWAYSACTIVATED = "AlwaysActivated"
+
+	-- デバッグ用定数
+	local _OUTTEXTDURATION = 4
 	
 	-- 初期化
 	function _obj:init()
@@ -28,11 +31,13 @@ function airDefence()
 		initTable()
 		
 		-- 対象オブジェクトのリストを初期化
+    --● airDefenceLogic()に移動
 		initObjList()
 		
 		-- SAMのレーダーoff
-		initSamCondition()
-		
+	  --● initEwrList()とinitSamList()に内容を分散 (isStoppingRadarByIntegratedCommandPostはtrueなのにレーダーが回ってて正常に動作しない)
+		--initSamCondition()
+    
 	end
 	
 	-- テーブル準備
@@ -58,44 +63,108 @@ function airDefence()
 	function initObjList()
 
 		for _coalitionSideNum = _COALITIONSIDERED, _COALITIONSIDEBLUE do
+			--● 存在しないとき, 消去！
+			removeDeadFromList(_objList[_coalitionSideNum].EwrGrpList)
+			removeDeadFromList(_objList[_coalitionSideNum].SamGrpList)
+			removeDeadFromSamSet(_objList[_coalitionSideNum].SamSetList)
+			removeDeadFromSamSet(_bukuSrList)
+
 			-- 探知専用レーダーのグループを取得
 			initEwrList(_coalitionSideNum)
 			
 			-- SAMのグループを取得
-			initSamList( _coalitionSideNum) 
+			initSamList( _coalitionSideNum)
 		end
 		
+	end
+
+	--● 存在しないとき, 消去！
+	function removeDeadFromList(_GrpList)
+		local _j = #_GrpList
+		while _j > 0 do
+			if not _GrpList[_j]:isExist() then
+				table.remove(_GrpList , _j)
+				trigger.action.outText('removeDeadFromList : Does not exist | _GrpList['.._j..'] is removed' , _OUTTEXTDURATION , false)
+			end
+			_j = _j - 1
+		end
+	end
+	
+	--● 存在しないとき, 消去！
+	function removeDeadFromSamSet(_GrpList)
+		local _j = #_GrpList
+		while _j > 0 do
+			if not _GrpList[_j].Unit:isExist() then
+				table.remove(_GrpList , _j)
+				trigger.action.outText('removeDeadFromSamSet : Does not exist | _GrpList['.._j..'] is removed' , _OUTTEXTDURATION , false)
+			end
+			_j = _j - 1
+		end
 	end
 	
 	-- 探知専用レーダーのグループリストを初期化
 	function initEwrList(_coalitionSideNum)
 
+    --● 重複しない限り追加するよう動作を変更, MISSION STARTより後に出現したLATE ACTIVATIONなどのUnitに対応するため, 改造.
 		for _i, _grp in pairs(coalition.getGroups(_coalitionSideNum)) do
 			if string.find(_grp:getName(), _KEYOFDESIGNATEDEWRGRP) then
-				table.insert(_objList[_coalitionSideNum].EwrGrpList, _grp)
+				local duplicate = false
+				for _j, _existing in pairs(_objList[_coalitionSideNum].EwrGrpList) do
+					if _grp:getID() == _existing:getID() then
+						duplicate = true
+						break
+					end
+				end
+        if not duplicate then
+  				table.insert(_objList[_coalitionSideNum].EwrGrpList, _grp)
+        end
 			end
 		end
 	end
 	
 	-- SAMのユニットオブジェクトのリストを初期化
 	function initSamList(_coalitionSideNum) 
-		
+
+    --● 重複しない限り追加するよう動作を変更, MISSION STARTより後に出現したLATE ACTIVATIONなどのUnitに対応するため, 改造. 
 		for _i, _grp in pairs(coalition.getGroups(_coalitionSideNum)) do
 			if string.find(_grp:getName(), _KEYOFDESIGNATEDSAMGRP) then
-				table.insert(_objList[_coalitionSideNum].SamGrpList, _grp)
-				for _index, _unitObj in pairs(_grp:getUnits()) do
-					local _samSet = getSamSet(_unitObj, _grp)
-					if _samSet ~= nil then
-						table.insert(_objList[_coalitionSideNum].SamSetList , _samSet)
+        local duplicate = false
+				for _j, _existing in pairs(_objList[_coalitionSideNum].SamGrpList) do
+					if _grp:getID() == _existing:getID() then
+						duplicate = true
+						break
 					end
 				end
+        if not duplicate then
+          table.insert(_objList[_coalitionSideNum].SamGrpList, _grp)
+          trigger.action.outText('initSamList : _objList['.._coalitionSideNum..'].SamGrpList['..#_objList[_coalitionSideNum].SamGrpList..']' , _OUTTEXTDURATION , false)
+          for _index, _unitObj in pairs(_grp:getUnits()) do
+            local _samSet = getSamSet(_unitObj, _grp)
+            if _samSet ~= nil then
+							--● initSamCondition()の代わり
+							local _list = _objList[_coalitionSideNum]
+							if #_list['EwrGrpList'] ~= 0 then
+								_samSet['isStoppingRadarByIntegratedCommandPost'] = true
+								_samSet['Unit']:enableEmission(false)
+								for _, _sr in pairs(_samSet['SearchRadarList']) do
+									_sr['isStoppingRadarByIntegratedCommandPost'] = true
+									_sr['Unit']:enableEmission(false)
+								end	
+							end
+              table.insert(_objList[_coalitionSideNum].SamSetList , _samSet)
+              trigger.action.outText('initSamList : _objList['.._coalitionSideNum..'].SamSetList['..#_objList[_coalitionSideNum].SamSetList..']' , _OUTTEXTDURATION , false)
+            end
+          end
+        end
 			end
 		end
 	end
 	
 	-- SAMのレーダーを初期化
+	--● initEwrList()とinitSamList()に内容を分散, この関数は使わない (isStoppingRadarByIntegratedCommandPostはtrueなのにレーダーが回ってて正常に動作しない)
+	--[[
 	function initSamCondition()
-		
+
 		-- レーダーオフにする
 		for _coalitionSideNum = _COALITIONSIDERED, _COALITIONSIDEBLUE do
 			for _i, _set in pairs(_objList[_coalitionSideNum].SamSetList) do
@@ -112,20 +181,31 @@ function airDefence()
 			end
 		end
 	end
+	]]
 	
 	-- 防空ロジック
 	function _obj:airDefenceLogic()
-		
+    --● init()から移動, 定期的に追加されたUnitを監視する. 
+    initObjList()
+
 		for _coalitionSideNum = _COALITIONSIDERED, _COALITIONSIDEBLUE do
 			
+			trigger.action.outText('_obj:airDefenceLogic : #_objList['.._coalitionSideNum..'].EwrGrpList = '..#(_objList[_coalitionSideNum].EwrGrpList) , _OUTTEXTDURATION , false)
+			trigger.action.outText('_obj:airDefenceLogic : #_objList['.._coalitionSideNum..'].SamGrpList = '..#(_objList[_coalitionSideNum].SamGrpList) , _OUTTEXTDURATION , false)
+			trigger.action.outText('_obj:airDefenceLogic : #_objList['.._coalitionSideNum..'].SamSetList = '..#(_objList[_coalitionSideNum].SamSetList) , _OUTTEXTDURATION , false)
+
 			-- 情報の統合
 			local _targetList = integrateInfo(_coalitionSideNum)
 			
 			_coalitionSideObjList = _objList[_coalitionSideNum]
 			for _, _samSet in pairs(_coalitionSideObjList['SamSetList']) do
+				if not(_objList[_coalitionSideNum].SamSetList[_].isStoppingRadarByIntegratedCommandPost) --[[and (not _objList[_coalitionSideNum].SamSetList[_].isStoppingRadarByArm)]] then
+				  trigger.action.outText(_coalitionSideNum..'-'.._..' '..' | CP '..ostLib.Debug.strValue(_objList[_coalitionSideNum].SamSetList[_].isStoppingRadarByIntegratedCommandPost)..' | ARM '..ostLib.Debug.strValue(_objList[_coalitionSideNum].SamSetList[_].isStoppingRadarByArm)..' | '.._samSet['Unit']:getName()..' '.._samSet['Unit']:getTypeName() , ostLib.Debug.textDuration , false)
+				end
+
 				-- 分析
-				 local _samSet = judge(_coalitionSideNum, _targetList, _samSet)
-				
+				local _samSet = judge(_coalitionSideNum, _targetList, _samSet)
+
 				-- レーダー操作
 				oparationRadar(_samSet)
 				oparationEwrOparation(_coalitionSideNum, _targetList)
@@ -713,6 +793,7 @@ function airDefence()
 				_targetName = _target.object :getTypeName()
 				if _targetName == "AGM_88" 
 					or _targetName == "AGM_45" 
+					or _targetName == "AGM_122" 
 					or _targetName == "X_31P" 
 					or _targetName == "X_25MP"  
 					or _targetName == "LD-10" then

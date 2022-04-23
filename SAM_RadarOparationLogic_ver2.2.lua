@@ -267,7 +267,7 @@ function airDefence()
 			table.insert(_ewrRestartList, _ewrObj)
 			timer.scheduleFunction(ewrAiOn, self, timer.getTime() + _restartTime) 
 			if _unit:isExist() then
-				--trigger.action.setGroupAIOff(_unit:getGroup())
+				trigger.action.setGroupAIOff(_unit:getGroup())
 				--_unit:enableEmission(false)
 			end
 		end
